@@ -226,7 +226,7 @@ Backend settings
 
    A list of filters that will be applied once per combined JS file.
 
-   While ``COMPRESS_JS_FILTERS`` applies each filter per individual JSCSS file,
+   While ``COMPRESS_JS_FILTERS`` applies each filter per individual JS file,
    this setting applies filters once per ``{% compress %}`` block. This is
    useful if you have a lot of JS files and you're a compressor that takes a
    while to start up (like ``compressor.filters.closure.ClosureCompilerFilter``).
@@ -456,3 +456,11 @@ Offline settings
 
     The name of the file to be used for saving the names of the files
     compressed offline.
+
+.. attribute:: COMPRESS_OFFLINE_FALLBACK
+
+    :Default: ``False``
+
+    If this is set to ``True``, if a compressed file wasn't generated offline,
+    instead of raising ``OfflineGenerationError``, the original uncompressed
+    content will be rendered.
