@@ -4,10 +4,11 @@ from compressor.conf import settings
 
 class CssCompressor(Compressor):
 
-    def __init__(self, content=None, output_prefix="css", context=None):
+    def __init__(self, content=None, output_prefix="css", context=None, subnode=False):
         super(CssCompressor, self).__init__(content=content,
-            output_prefix=output_prefix, context=context)
+            output_prefix=output_prefix, context=context, subnode=subnode)
         self.filters = list(settings.COMPRESS_CSS_FILTERS)
+        self.global_filters = list(settings.COMPRESS_CSS_GLOBAL_FILTERS)
         self.type = output_prefix
 
     def split_contents(self):
@@ -34,7 +35,7 @@ class CssCompressor(Compressor):
                     self.media_nodes[-1][1].split_content.append(data)
                 else:
                     node = CssCompressor(content=self.parser.elem_str(elem),
-                                         context=self.context)
+                                         context=self.context, subnode=True)
                     node.split_content.append(data)
                     self.media_nodes.append((media, node))
         return self.split_content

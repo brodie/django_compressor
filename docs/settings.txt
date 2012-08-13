@@ -147,6 +147,18 @@ Backend settings
          The context to render your css files with.
 
 
+.. attribute:: COMPRESS_CSS_GLOBAL_FILTERS
+
+   :default: ``[]``
+
+   A list of filters that will be applied once per combined CSS file.
+
+   While ``COMPRESS_CSS_FILTERS`` applies each filter per individual CSS file,
+   this setting applies filters once per ``{% compress %}`` block. This is
+   useful if you have a lot of CSS files and you're a compressor that takes a
+   while to start up (like ``compressor.filters.yui.YUICSSFilter``).
+
+
 .. _compress_js_filters:
 
 .. attribute:: COMPRESS_JS_FILTERS
@@ -206,6 +218,19 @@ Backend settings
     .. _`Google Closure compiler`: http://code.google.com/closure/compiler/
     .. _`YUI compressor`: http://developer.yahoo.com/yui/compressor/
     .. _`Slim It`: http://slimit.org/
+
+
+.. attribute:: COMPRESS_JS_GLOBAL_FILTERS
+
+   :default: ``[]``
+
+   A list of filters that will be applied once per combined JS file.
+
+   While ``COMPRESS_JS_FILTERS`` applies each filter per individual JSCSS file,
+   this setting applies filters once per ``{% compress %}`` block. This is
+   useful if you have a lot of JS files and you're a compressor that takes a
+   while to start up (like ``compressor.filters.closure.ClosureCompilerFilter``).
+
 
 .. attribute:: COMPRESS_PRECOMPILERS
 

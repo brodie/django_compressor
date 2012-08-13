@@ -4,9 +4,10 @@ from compressor.base import Compressor, SOURCE_HUNK, SOURCE_FILE
 
 class JsCompressor(Compressor):
 
-    def __init__(self, content=None, output_prefix="js", context=None):
-        super(JsCompressor, self).__init__(content, output_prefix, context)
+    def __init__(self, content=None, output_prefix="js", context=None, subnode=False):
+        super(JsCompressor, self).__init__(content, output_prefix, context, subnode)
         self.filters = list(settings.COMPRESS_JS_FILTERS)
+        self.global_filters = list(settings.COMPRESS_JS_GLOBAL_FILTERS)
         self.type = output_prefix
 
     def split_contents(self):

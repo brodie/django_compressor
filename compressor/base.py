@@ -31,7 +31,8 @@ class Compressor(object):
     """
     type = None
 
-    def __init__(self, content=None, output_prefix=None, context=None, *args, **kwargs):
+    def __init__(self, content=None, output_prefix=None, context=None, subnode=False,
+                 *args, **kwargs):
         self.content = content or ""
         self.output_prefix = output_prefix or "compressed"
         self.output_dir = settings.COMPRESS_OUTPUT_DIR.strip('/')
@@ -42,6 +43,7 @@ class Compressor(object):
         self.extra_context = {}
         self.all_mimetypes = dict(settings.COMPRESS_PRECOMPILERS)
         self.finders = staticfiles.finders
+        self.subnode = subnode
 
     def split_contents(self):
         """
@@ -129,6 +131,10 @@ class Compressor(object):
         return [get_class(filter_cls) for filter_cls in self.filters]
 
     @cached_property
+    def cached_global_filters(self):
+        return [get_class(filter_cls) for filter_cls in self.global_filters]
+
+    @cached_property
     def mtimes(self):
         return [str(get_mtime(value))
                 for kind, value, basename, elem in self.split_contents()
@@ -191,7 +197,12 @@ class Compressor(object):
         content = []
         for hunk in self.hunks(forced):
             content.append(hunk)
-        return content
+        content = '\n'.join(content)
+        if not self.subnode and (settings.COMPRESS_ENABLED or forced):
+            content = self.filter(content, global_=True, method=METHOD_INPUT)
+            return smart_unicode(content, self.charset)
+        else:
+            return content
 
     def precompile(self, content, kind=None, elem=None, filename=None, **kwargs):
         if not kind:
@@ -210,8 +221,12 @@ class Compressor(object):
                     command=command, filename=filename).input(**kwargs)
         return False, content
 
-    def filter(self, content, method, **kwargs):
-        for filter_cls in self.cached_filters:
+    def filter(self, content, method, global_=False, **kwargs):
+        if global_:
+            filters = self.cached_global_filters
+        else:
+            filters = self.cached_filters
+        for filter_cls in filters:
             filter_func = getattr(
                 filter_cls(content, filter_type=self.type), method)
             try:
@@ -231,7 +246,7 @@ class Compressor(object):
         if not content:
             return ''
 
-        output = '\n'.join(c.encode(self.charset) for c in content)
+        output = content.encode(self.charset)
 
         if settings.COMPRESS_ENABLED or forced:
             filtered_output = self.filter_output(output)

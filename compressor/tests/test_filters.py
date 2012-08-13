@@ -87,14 +87,20 @@ class CssAbsolutizingTestCase(TestCase):
     hashing_func = staticmethod(get_hashed_mtime)
     content = ("p { background: url('../../img/python.png') }"
                "p { filter: Alpha(src='../../img/python.png') }")
+    filters = settings.COMPRESS_CSS_FILTERS
+    global_filters = settings.COMPRESS_CSS_GLOBAL_FILTERS
 
     def setUp(self):
         self.old_enabled = settings.COMPRESS_ENABLED
         self.old_url = settings.COMPRESS_URL
         self.old_hashing_method = settings.COMPRESS_CSS_HASHING_METHOD
+        self.old_filters = settings.COMPRESS_CSS_FILTERS
+        self.old_global_filters = settings.COMPRESS_CSS_GLOBAL_FILTERS
         settings.COMPRESS_ENABLED = True
         settings.COMPRESS_URL = '/media/'
         settings.COMPRESS_CSS_HASHING_METHOD = self.hashing_method
+        settings.COMPRESS_CSS_FILTERS = self.filters
+        settings.COMPRESS_CSS_GLOBAL_FILTERS = self.global_filters
         self.css = """
         <link rel="stylesheet" href="/media/css/url/url1.css" type="text/css">
         <link rel="stylesheet" href="/media/css/url/2/url2.css" type="text/css">
@@ -105,6 +111,8 @@ class CssAbsolutizingTestCase(TestCase):
         settings.COMPRESS_ENABLED = self.old_enabled
         settings.COMPRESS_URL = self.old_url
         settings.COMPRESS_CSS_HASHING_METHOD = self.old_hashing_method
+        settings.COMPRESS_CSS_FILTERS = self.old_filters
+        settings.COMPRESS_CSS_GLOBAL_FILTERS = self.old_global_filters
 
     def test_css_absolute_filter(self):
         filename = os.path.join(settings.COMPRESS_ROOT, 'css/url/test.css')
@@ -159,25 +167,24 @@ class CssAbsolutizingTestCase(TestCase):
                   "p { filter: Alpha(src='%(url)simg/python.png?%(hash)s') }") % params
         self.assertEqual(output, filter.input(filename=filename, basename='css/url/test.css'))
 
-    def test_css_hunks(self):
+    def test_css_filter_input(self):
         hash_dict = {
             'hash1': self.hashing_func(os.path.join(settings.COMPRESS_ROOT, 'img/python.png')),
             'hash2': self.hashing_func(os.path.join(settings.COMPRESS_ROOT, 'img/add.png')),
         }
-        self.assertEqual([u"""\
+        self.assertEqual(u"""\
 p { background: url('/media/img/python.png?%(hash1)s'); }
 p { background: url('/media/img/python.png?%(hash1)s'); }
 p { background: url('/media/img/python.png?%(hash1)s'); }
 p { background: url('/media/img/python.png?%(hash1)s'); }
 p { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/media/img/python.png?%(hash1)s'); }
-""" % hash_dict,
-               u"""\
+
 p { background: url('/media/img/add.png?%(hash2)s'); }
 p { background: url('/media/img/add.png?%(hash2)s'); }
 p { background: url('/media/img/add.png?%(hash2)s'); }
 p { background: url('/media/img/add.png?%(hash2)s'); }
 p { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/media/img/add.png?%(hash2)s'); }
-""" % hash_dict], list(self.css_node.hunks()))
+""" % hash_dict, self.css_node.filter_input())
 
     def test_guess_filename(self):
         for base_url in ('/media/', 'http://media.example.com/'):
@@ -247,3 +254,7 @@ class TemplateTestCase(TestCase):
         #footer {font-weight: bold;}
         """
         self.assertEqual(input, TemplateFilter(content).input())
+
+
+class GlobalFilterTestCase(CssAbsolutizingTestCaseWithHash):
+    global_filters = ['compressor.filters.cssmin.CSSMinFilter']

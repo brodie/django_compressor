@@ -25,9 +25,11 @@ class CompressorConf(AppConf):
     ROOT = None
 
     CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter']
+    CSS_GLOBAL_FILTERS = []
     CSS_HASHING_METHOD = 'mtime'
 
     JS_FILTERS = ['compressor.filters.jsmin.JSMinFilter']
+    JS_GLOBAL_FILTERS = []
     PRECOMPILERS = (
         # ('text/coffeescript', 'coffee --compile --stdio'),
         # ('text/less', 'lessc {infile} {outfile}'),
