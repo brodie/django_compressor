@@ -1,3 +1,5 @@
+import logging
+
 from django import template
 from django.core.exceptions import ImproperlyConfigured
 from django.utils import six
@@ -13,6 +15,8 @@ register = template.Library()
 OUTPUT_FILE = 'file'
 OUTPUT_INLINE = 'inline'
 OUTPUT_MODES = (OUTPUT_FILE, OUTPUT_INLINE)
+
+logger = logging.getLogger('compressor.templatetags')
 
 
 class CompressorMixin(object):
@@ -67,6 +71,11 @@ class CompressorMixin(object):
             offline_manifest = get_offline_manifest()
             if key in offline_manifest:
                 return offline_manifest[key]
+            elif settings.COMPRESS_OFFLINE_FALLBACK:
+                logger.error('You have offline compression '
+                    'enabled but key "%s" is missing from offline manifest. '
+                    'You may need to run "python manage.py compress".' % key)
+                return self.get_original_content(context)
             else:
                 raise OfflineGenerationError('You have offline compression '
                     'enabled but key "%s" is missing from offline manifest. '

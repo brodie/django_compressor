@@ -455,3 +455,11 @@ Offline settings
 
     The name of the file to be used for saving the names of the files
     compressed offline.
+
+.. attribute:: COMPRESS_OFFLINE_FALLBACK
+
+    :Default: ``False``
+
+    If this is set to ``True``, if a compressed file wasn't generated offline,
+    instead of raising ``OfflineGenerationError``, the original uncompressed
+    content will be rendered.
