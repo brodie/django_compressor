@@ -95,7 +95,13 @@ class CompressorMixin(object):
     def render_compressed(self, context, kind, mode, forced=False):
 
         # See if it has been rendered offline
-        cached_offline = self.render_offline(context, forced=forced)
+        try:
+            cached_offline = self.render_offline(context, forced=forced)
+        except Exception:
+            if settings.COMPRESS_OFFLINE_FALLBACK:
+                logger.exception('Failed to render offline static content')
+                return self.get_original_content(context)
+            raise
         if cached_offline:
             return cached_offline
 
