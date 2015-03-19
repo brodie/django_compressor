@@ -86,7 +86,12 @@ def flush_offline_manifest():
     _offline_manifest = None
 
 
-def write_offline_manifest(manifest):
+def write_offline_manifest(manifest, merge=False):
+    if merge:
+        new_manifest = manifest
+        manifest = get_offline_manifest()
+        manifest.update(new_manifest)
+
     filename = get_offline_manifest_filename()
     content = json.dumps(manifest, indent=2).encode('utf8')
     default_storage.save(filename, ContentFile(content))

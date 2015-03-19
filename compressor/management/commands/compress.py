@@ -123,6 +123,9 @@ class Command(NoArgsCommand):
                 "(which defaults to STATIC_ROOT). Be aware that using this "
                 "can lead to infinite recursion if a link points to a parent "
                 "directory of itself.", dest='follow_links'),
+        make_option('--merge', default=False, action='store_true',
+            help="Merge resulting manifest with any existing manifest",
+            dest='merge'),
     )
 
     requires_model_validation = False
@@ -285,7 +288,8 @@ class Command(NoArgsCommand):
                 results.append(result)
                 count += 1
 
-        write_offline_manifest(offline_manifest)
+        write_offline_manifest(offline_manifest,
+                               merge=options.get('merge', False))
 
         log.write("done\nCompressed %d block(s) from %d template(s).\n" %
                   (count, len(compressor_nodes)))
